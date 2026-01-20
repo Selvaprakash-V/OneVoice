@@ -14,7 +14,6 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import { OnboardingProvider } from '../context/OnboardingContext';
 import { auth } from '../services/firebase';
 import WelcomeGestureScreen from '../screens/app/WelcomeGestureScreen';
-import QuestionnaireScreen from '../screens/onboarding/QuestionnaireScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,7 +28,6 @@ export type RootParamList = {
   PermissionExplanation: undefined;
   WelcomeGesture: undefined;
   MainApp: undefined;
-  Questionnaire: undefined; // Added Questionnaire screen
 };
 
 export default function AppNavigator() {
@@ -53,8 +51,6 @@ export default function AppNavigator() {
                 <Stack.Screen name="CommunicationPreference" component={CommunicationPreferenceScreen} />
                 <Stack.Screen name="UsageContext" component={UsageContextScreen} />
                 <Stack.Screen name="LanguagePreference" component={LanguagePreferenceScreen} />
-                {console.log('Navigating to QuestionnaireScreen')}
-                <Stack.Screen name="Questionnaire" component={QuestionnaireScreen} />
                 <Stack.Screen name="PermissionExplanation" component={PermissionExplanationScreen} />
                 <Stack.Screen name="WelcomeGesture" component={WelcomeGestureScreen} />
                 <Stack.Screen name="MainApp" component={MainAppScreen} />

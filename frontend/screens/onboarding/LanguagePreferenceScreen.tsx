@@ -122,8 +122,8 @@ export default function LanguagePreferenceScreen({ navigation }: any) {
           setSecondaryLanguage(
             secondary.trim() ? secondary.trim() : undefined
           );
-          console.log('Navigating to Questionnaire'); // Updated log
-          navigation.navigate('Questionnaire'); // Updated screen name
+          console.log('Navigating to PermissionExplanation');
+          navigation.navigate('PermissionExplanation');
         }}
         accessibilityRole="button"
         accessibilityLabel="Continue"

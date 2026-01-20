@@ -9,13 +9,6 @@ export interface OnboardingData {
   usageContexts: string[];
   primaryLanguage: string;
   secondaryLanguage?: string;
-  questionnaire?: {
-    communicationChallenges: string;
-    preferredStyle: string;
-    contextNeeds: string;
-    signNuances: string;
-    techFeedback: string;
-  }; // Added questionnaire field
 }
 
 export interface PersonalizationContext {
@@ -114,14 +107,6 @@ export async function buildSystemPrompt(
     prompt += `\n- User struggles: ${p.struggles}.`;
     prompt += `\n- Environment: ${p.environment}.`;
     prompt += `\n- Preferences: ${p.preferences}.`;
-  } else if (onboarding.questionnaire) {
-    const q = onboarding.questionnaire;
-    prompt += `\n\nPersonalization (from questionnaire):`;
-    prompt += `\n- Communication challenges: ${q.communicationChallenges}.`;
-    prompt += `\n- Preferred style: ${q.preferredStyle}.`;
-    prompt += `\n- Context needs: ${q.contextNeeds}.`;
-    prompt += `\n- Sign nuances: ${q.signNuances}.`;
-    prompt += `\n- Tech feedback: ${q.techFeedback}.`;
   } else {
     prompt += `\n\nPersonalization:`;
     prompt += `\n- Use neutral defaults. Do not assume user details.`;

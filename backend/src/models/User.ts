@@ -8,6 +8,14 @@ export interface Questionnaire {
   techFeedback: string;
 }
 
+export interface QuestionnaireData {
+  communicationChallenges: string;
+  preferredStyle: string;
+  contextNeeds: string;
+  signNuances: string;
+  techFeedback: string;
+}
+
 export interface Onboarding {
   textSize: string;
   communicationPreference: string;
@@ -20,20 +28,11 @@ export interface Onboarding {
 export interface IUser extends Document {
   uid: string;
   onboarding: Onboarding;
-  questionnaire?: Questionnaire; // Moved questionnaire to top-level
   createdAt: Date;
   updatedAt: Date;
   generatedPrompt?: string; // Added field for storing generated prompts
   // Future fields: preferences, personalization, aiEmbeddings, etc.
 }
-
-const QuestionnaireSchema: Schema = new Schema({
-  communicationChallenges: { type: String, required: false },
-  preferredStyle: { type: String, required: false },
-  contextNeeds: { type: String, required: false },
-  signNuances: { type: String, required: false },
-  techFeedback: { type: String, required: false },
-});
 
 const OnboardingSchema: Schema = new Schema({
   textSize: { type: String, required: true },
@@ -47,7 +46,6 @@ const OnboardingSchema: Schema = new Schema({
 const UserSchema: Schema = new Schema({
   uid: { type: String, required: true, unique: true, index: true },
   onboarding: { type: OnboardingSchema, required: true },
-  questionnaire: { type: QuestionnaireSchema, required: false }, // Moved questionnaire to top-level
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   generatedPrompt: { type: String }, // Added field for storing generated prompts

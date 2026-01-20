@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 import onboardingRouter from './routes/onboarding';
 import userRouter from './routes/user';
-import questionnaireRouter from './routes/questionnaire';
 import cors from 'cors';
 
 const app = express();
@@ -25,7 +24,6 @@ mongoose.connect(mongoUri || '')
 
 app.use('/onboarding', onboardingRouter);
 app.use('/users', userRouter);
-app.use('/questionnaire', questionnaireRouter);
 
 app.get('/', (req, res) => {
   res.send('OneVoice API running');

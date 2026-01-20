@@ -1,0 +1,1 @@
+# Gloss-to-Sign animation logic

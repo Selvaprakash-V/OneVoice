@@ -52,30 +52,4 @@ router.post('/', async (req, res) => {
   }
 });
 
-// POST /onboarding/questionnaire
-router.post('/questionnaire', async (req, res) => {
-  try {
-    console.log('Received questionnaire input:', req.body); // Log input data
-
-    const { uid, questionnaire } = req.body;
-    if (!uid || !questionnaire) {
-      return res.status(400).json({ error: 'Missing uid or questionnaire data.' });
-    }
-
-    let user = await User.findOne({ uid });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found.' });
-    }
-
-    user.questionnaire = questionnaire; // Updated to top-level field
-    user.updatedAt = new Date();
-    await user.save();
-
-    return res.status(200).json({ message: 'Questionnaire saved successfully', user });
-  } catch (error) {
-    console.error('Error in /questionnaire route:', error);
-    return res.status(500).json({ error: 'Internal server error.' });
-  }
-});
-
 export default router;

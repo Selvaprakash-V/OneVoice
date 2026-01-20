@@ -1,59 +1,65 @@
-import express, { Response } from 'express';
-import { saveGeneratedPrompt } from '../services/userService';
-import { SignRecognitionService } from '../services/signRecognitionService';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const router = express.Router();
-
-// Ensure req.user is properly typed
-interface AuthenticatedRequest extends express.Request {
-  user?: { id: string };
+export interface Questionnaire {
+  communicationChallenges: string;
+  preferredStyle: string;
+  contextNeeds: string;
+  signNuances: string;
+  techFeedback: string;
 }
 
-// Mock ChatController for backend usage
-const ChatController = {
-  processInput: async ({ uid, mode, text, activeContext, prefs }: any) => {
-    return {
-      response: `Processed input for user ${uid} in mode ${mode} with text: ${text}`,
-    };
-  },
-};
+export interface Onboarding {
+  textSize: string;
+  communicationPreference: string;
+  usageContexts: string[];
+  primaryLanguage: string;
+  secondaryLanguage: string;
+  questionnaire?: Questionnaire; // Added questionnaire field
+}
 
-// Save generated prompt
-router.post('/:uid/generatedPrompt', async (req: express.Request, res: Response) => {
-  const uid = req.params.uid as string; // Ensure uid is a string
-  const prompt = req.body.prompt as string; // Ensure prompt is a string
+export interface IUser extends Document {
+  uid: string;
+  onboarding: Onboarding;
+  createdAt: Date;
+  updatedAt: Date;
+  generatedPrompt?: string; // Added field for storing generated prompts
+  // Future fields: preferences, personalization, aiEmbeddings, etc.
+}
 
-  try {
-    await saveGeneratedPrompt(uid, prompt);
-    res.status(200).send({ message: 'Prompt saved successfully' });
-  } catch (error) {
-    console.error('Error saving generated prompt:', error);
-    res.status(500).send('Internal Server Error');
-  }
+const QuestionnaireSchema: Schema = new Schema({
+  communicationChallenges: { type: String, required: false },
+  preferredStyle: { type: String, required: false },
+  contextNeeds: { type: String, required: false },
+  signNuances: { type: String, required: false },
+  techFeedback: { type: String, required: false },
 });
 
-// Process sign input
-router.post('/process-sign', async (req: AuthenticatedRequest, res) => {
-  const { signFrames } = req.body;
-
-  if (!signFrames) {
-    return res.status(400).json({ error: 'Sign frames are required' });
-  }
-
-  try {
-    const recognizedText = await SignRecognitionService.recognizeSign(signFrames);
-    const chatResponse = await ChatController.processInput({
-      uid: req.user?.id || 'unknown', // Fallback for missing user ID
-      mode: 'sign',
-      text: recognizedText,
-      activeContext: req.body.activeContext,
-      prefs: req.body.prefs,
-    });
-
-    res.json(chatResponse);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to process sign input' });
-  }
+const OnboardingSchema: Schema = new Schema({
+  textSize: { type: String, required: true },
+  communicationPreference: { type: String, required: true },
+  usageContexts: { type: [String], required: true },
+  primaryLanguage: { type: String, required: true },
+  secondaryLanguage: { type: String, required: true },
+  questionnaire: { type: QuestionnaireSchema, required: false }, // Added questionnaire schema
 });
 
-export default router;
+const UserSchema: Schema = new Schema({
+  uid: { type: String, required: true, unique: true, index: true },
+  onboarding: { type: OnboardingSchema, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  generatedPrompt: { type: String }, // Added field for storing generated prompts
+  // Future fields: preferences, personalization, aiEmbeddings, etc.
+});
+
+// Create indexes for onboarding options for analytics and fast lookup
+UserSchema.index({
+  'onboarding.textSize': 1,
+  'onboarding.communicationPreference': 1,
+  'onboarding.usageContexts': 1,
+  'onboarding.primaryLanguage': 1,
+  'onboarding.secondaryLanguage': 1,
+  uid: 1
+});
+
+export default mongoose.model<IUser>('User', UserSchema, 'onboarding');

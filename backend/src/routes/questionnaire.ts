@@ -25,13 +25,17 @@ router.post('/', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     } else {
       // Update the existing user's questionnaire
-      user.questionnaire = questionnaire; // Updated to top-level field
+      user.onboarding.questionnaire = questionnaire;
       await user.save();
       console.log('User updated:', user); // Debug log
       return res.status(200).json({ message: 'Questionnaire updated successfully', user });
     }
-  } catch (error) {
-    console.error('Error in POST /questionnaire:', error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error in POST /questionnaire:', error.message, error.stack);
+    } else {
+      console.error('Unexpected error in POST /questionnaire:', error);
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 });

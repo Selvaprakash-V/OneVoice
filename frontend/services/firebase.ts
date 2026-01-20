@@ -32,13 +32,4 @@ try {
   }
 }
 
-// Centralized backend URL configuration
-export const BACKEND_URL = 'http://localhost:4000';
-
-// Example usage of BACKEND_URL
-export const apiCall = async (endpoint: string, options: RequestInit) => {
-  const response = await fetch(`${BACKEND_URL}/${endpoint}`, options);
-  return response.json();
-};
-
 export { app, auth };

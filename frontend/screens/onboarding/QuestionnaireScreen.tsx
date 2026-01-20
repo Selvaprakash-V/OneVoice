@@ -23,8 +23,12 @@ const QuestionnaireScreen = () => {
     try {
       await submitQuestionnaire(responses); // Use named import
       navigation.navigate('WelcomeGesture'); // Fix navigation name
-    } catch (error) {
-      console.error('Error submitting questionnaire:', error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Error submitting questionnaire:', error.message);
+      } else {
+        console.error('Unexpected error submitting questionnaire:', error);
+      }
     }
   };
 

@@ -1,3 +1,4 @@
+console.log('🔥 questionnaire router file LOADED');
 import express from 'express';
 import User from '../models/User'; // Corrected import for Mongoose model
 
@@ -39,6 +40,11 @@ router.post('/', async (req, res) => {
 router.get('/', (req, res) => {
   console.log('GET /questionnaire called'); // Debug log
   res.status(200).json({ message: 'GET request to /questionnaire is successful' });
+});
+
+// OPTIONS /questionnaire
+router.options('/', (req, res) => {
+  res.status(204).send();
 });
 
 export default router;

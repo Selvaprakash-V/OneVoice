@@ -1,8 +1,10 @@
-import { auth, BACKEND_URL } from './firebase';
+import { auth } from './firebase';
+import { BACKEND_URL } from './config';
 import { OnboardingData } from '../context/OnboardingContext';
 
 // Replace baseUrl with BACKEND_URL
 const baseUrl = BACKEND_URL;
+console.log('🌐 BACKEND_URL =', baseUrl);
 
 export async function storeOnboardingData(onboarding: OnboardingData) {
   const user = auth.currentUser;
@@ -112,7 +114,6 @@ export async function saveGeneratedPrompt(uid: string, prompt: string) {
 
   return response.json();
 }
-
 export async function submitQuestionnaire(responses: {
   communicationChallenges: string;
   preferredStyle: string;
@@ -127,6 +128,9 @@ export async function submitQuestionnaire(responses: {
     uid: user.uid,
     questionnaire: responses,
   };
+
+  console.log('🚨 ABOUT TO POST TO:', `${baseUrl}/questionnaire`);
+  console.log('🚨 PAYLOAD:', payload);
 
   const response = await fetch(`${baseUrl}/questionnaire`, {
     method: 'POST',

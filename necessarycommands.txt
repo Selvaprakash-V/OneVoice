@@ -1,0 +1,25 @@
+# Backend setup
+cd backend
+npm install
+npx tsc --init  # if tsconfig.json not present
+npx ts-node src/app.ts  # or use nodemon for dev
+
+# Frontend setup
+cd frontend
+npm install
+npm start  # or expo start
+npm install expo-av  # Install expo-av for video playback
+
+# Environment setup
+# Add your .env files in both backend and frontend as needed
+
+# MongoDB
+# Make sure your MongoDB Atlas cluster is running and connection string is in .env
+
+# Linting/Formatting (optional)
+npm install --save-dev eslint prettier
+npx eslint .
+npx prettier --write .
+
+# Git
+# .env and node_modules should be in .gitignore

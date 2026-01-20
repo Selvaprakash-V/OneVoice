@@ -1,0 +1,39 @@
+# Backend (Node.js/Express/TypeScript)
+express
+mongoose
+dotenv
+cors
+@types/express
+@types/node
+@types/cors
+typescript
+ts-node
+dev
+
+# Backend Start Command
+# If you have the dev script in backend/package.json:
+#   cd backend
+#   npm run dev
+# Otherwise:
+#   npx ts-node src/app.ts
+
+# Frontend (React Native/Expo)
+expo
+react
+react-native
+firebase
+@react-native-async-storage/async-storage
+@react-native-picker/picker
+@expo-google-fonts/inter
+@expo-google-fonts/poppins
+@expo-google-fonts/space-grotesk
+@expo/vector-icons
+@react-navigation/native
+@react-navigation/native-stack
+expo-app-loading
+expo-linear-gradient
+expo-status-bar
+react-native-safe-area-context
+react-native-screens
+react-native-dotenv
+expo-av

@@ -1,0 +1,1 @@
+expo install @expo-google-fonts/poppins @expo-google-fonts/inter expo-app-loading

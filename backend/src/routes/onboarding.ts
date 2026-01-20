@@ -23,11 +23,15 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /onboarding
+// POST /onboarding 
 router.post('/', async (req, res) => {
   try {
-    const { uid, onboarding } = req.body;
+    console.log('POST /onboarding - req.body:', req.body); // Debug log
+    console.log('POST /onboarding - req.headers:', req.headers); // Debug log
+    
+    const { uid, onboarding } = req.body || {};
     if (!uid || !onboarding) {
+      console.log('Missing data - uid:', uid, 'onboarding:', onboarding); // Debug log
       return res.status(400).json({ error: 'Missing uid or onboarding data.' });
     }
 

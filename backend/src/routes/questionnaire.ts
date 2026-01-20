@@ -20,12 +20,25 @@ router.post('/', async (req, res) => {
     console.log('User found:', user); // Debug log
 
     if (!user) {
-      // Return an error if the user does not exist
-      console.log('User not found with uid:', uid); // Debug log
-      return res.status(404).json({ error: 'User not found' });
+      // Create a new user with minimal onboarding data if they don't exist
+      console.log('User not found, creating new user with uid:', uid);
+      const newUser = new User({
+        uid,
+        onboarding: {
+          textSize: 'medium',
+          communicationPreference: 'both',
+          usageContexts: ['general'],
+          primaryLanguage: 'English',
+          secondaryLanguage: 'None'
+        },
+        questionnaire
+      });
+      await newUser.save();
+      console.log('New user created:', newUser);
+      return res.status(201).json({ message: 'User created with questionnaire', user: newUser });
     } else {
       // Update the existing user's questionnaire
-      user.onboarding.questionnaire = questionnaire;
+      user.questionnaire = questionnaire;
       await user.save();
       console.log('User updated:', user); // Debug log
       return res.status(200).json({ message: 'Questionnaire updated successfully', user });

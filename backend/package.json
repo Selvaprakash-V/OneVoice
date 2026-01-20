@@ -12,6 +12,6 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "dev": "ts-node src/app.ts"
+    "dev": "node init && ts-node src/app.ts"
   }
 }

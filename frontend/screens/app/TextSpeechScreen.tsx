@@ -15,7 +15,7 @@ import { Audio } from 'expo-av';
 import { colors } from '../../theme/colors';
 
 // Backend API URL - Update this to your Django server URL
-const STT_API_URL = 'http://172.18.234.33:8000/api/speech-to-text/';
+const STT_API_URL = 'http://10.38.112.241:8000/api/speech-to-text/';
 
 const COLORS = {
     bg: '#05070a',

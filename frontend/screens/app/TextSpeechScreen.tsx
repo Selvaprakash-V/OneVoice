@@ -251,6 +251,35 @@ export default function TextSpeechScreen({ navigation }: TextSpeechScreenProps) 
                     </View>
                 </View>
 
+                {/* LLM Chat Option */}
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.featureCard,
+                        pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }
+                    ]}
+                    onPress={() => navigation.navigate('LLMChat')}
+                >
+                    <LinearGradient
+                        colors={['rgba(56, 189, 248, 0.1)', 'rgba(56, 189, 248, 0.05)']}
+                        style={styles.cardGradient}
+                    >
+                        <View style={styles.cardHeader}>
+                            <View style={[styles.iconContainer, { backgroundColor: 'rgba(56, 189, 248, 0.2)' }]}>
+                                <Text style={{ fontSize: 24 }}>🤖</Text>
+                            </View>
+                            <View style={styles.cardHeaderText}>
+                                <Text style={styles.cardTitle}>Converse with LLM</Text>
+                                <Text style={styles.cardSubtitle}>
+                                    Chat with an empathetic AI assistant
+                                </Text>
+                            </View>
+                            <View style={styles.arrowContainer}>
+                                <Text style={styles.arrowText}>→</Text>
+                            </View>
+                        </View>
+                    </LinearGradient>
+                </Pressable>
+
                 {/* Speech to Text Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>

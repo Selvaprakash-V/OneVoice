@@ -16,6 +16,7 @@ import { auth } from '../services/firebase';
 import WelcomeGestureScreen from '../screens/app/WelcomeGestureScreen';
 import TextSpeechScreen from '../screens/app/TextSpeechScreen';
 import SignLanguageConverter from '../screens/app/SignLanguageConverter';
+import LLMChatScreen from '../screens/app/LLMChatScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -32,6 +33,7 @@ export type RootParamList = {
   SignLanguageConverter: undefined;
   WelcomeGesture: undefined;
   MainApp: undefined;
+  LLMChat: undefined;
 };
 
 export default function AppNavigator() {
@@ -58,6 +60,7 @@ export default function AppNavigator() {
               <Stack.Screen name="PermissionExplanation" component={PermissionExplanationScreen} />
               <Stack.Screen name="TextSpeech" component={TextSpeechScreen} />
               <Stack.Screen name="SignLanguageConverter" component={SignLanguageConverter} />
+              <Stack.Screen name="LLMChat" component={LLMChatScreen} />
               <Stack.Screen name="WelcomeGesture" component={WelcomeGestureScreen} />
               <Stack.Screen name="MainApp" component={MainAppScreen} />
             </>

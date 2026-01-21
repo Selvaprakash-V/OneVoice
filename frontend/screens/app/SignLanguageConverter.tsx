@@ -30,6 +30,7 @@ const COLORS = {
 // Backend API URL - Update this to your Django server URL
 // For web: use localhost, for mobile: use your computer's IP address
 const API_URL = 'http://172.18.234.33:8000/api/animation/';
+const STT_API_URL = 'http://172.18.234.33:8000/api/speech-to-text/';
 const STATIC_URL = 'http://172.18.234.33:8000/static/';
 
 interface SignLanguageConverterProps {
@@ -41,6 +42,7 @@ export default function SignLanguageConverter({ navigation }: SignLanguageConver
     const [processedWords, setProcessedWords] = useState<string[]>([]);
     const [currentWordIndex, setCurrentWordIndex] = useState(-1);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isTranscribing, setIsTranscribing] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -150,15 +152,63 @@ export default function SignLanguageConverter({ navigation }: SignLanguageConver
             });
             const uri = recording.getURI();
             console.log('Recording stopped and stored at', uri);
-
-            // In production, you would send this audio to a speech-to-text service
-            Alert.alert(
-                'Recording Complete',
-                'Speech-to-text conversion requires integration with a speech recognition service. For now, please use the text input.'
-            );
             setRecording(null);
+
+            if (!uri) return;
+
+            // Send to backend
+            setIsTranscribing(true);
+
+            try {
+                const formData = new FormData();
+                formData.append('audio', {
+                    uri: uri,
+                    type: 'audio/m4a', // Expo Audio default is m4a/caf
+                    name: 'recording.m4a',
+                } as any);
+
+                console.log('Sending to STT API:', STT_API_URL);
+                const response = await fetch(STT_API_URL, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage = `Server returned ${response.status}`;
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        if (errorJson.error) errorMessage = errorJson.error;
+                    } catch (e) {
+                        if (errorText) errorMessage = errorText;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                console.log('STT Response:', data);
+
+                if (data.status === 'success' && data.text) {
+                    setInputText(data.text);
+                    // Optional: Automatically convert after speaking?
+                    // processTextToSign(data.text); 
+                } else {
+                    Alert.alert('Transcription Failed', data.error || 'Could not transcribe audio.');
+                }
+
+            } catch (apiError: any) {
+                console.error('STT API Error:', apiError);
+                Alert.alert('STT API Error', `Error: ${apiError.message}`);
+            } finally {
+                setIsTranscribing(false);
+            }
+
         } catch (error) {
             console.error('Error stopping recording:', error);
+            setIsTranscribing(false);
         }
     };
 
@@ -247,9 +297,14 @@ export default function SignLanguageConverter({ navigation }: SignLanguageConver
                                     isRecording && styles.micButtonActive,
                                     pressed && { opacity: 0.8 },
                                 ]}
-                                onPress={isRecording ? stopRecording : startRecording}
+                                onPress={isTranscribing ? undefined : (isRecording ? stopRecording : startRecording)}
+                                disabled={isTranscribing}
                             >
-                                <Text style={styles.micIcon}>{isRecording ? '⏹️' : '🎤'}</Text>
+                                {isTranscribing ? (
+                                    <ActivityIndicator size="small" color={COLORS.bg} />
+                                ) : (
+                                    <Text style={styles.micIcon}>{isRecording ? '⏹️' : '🎤'}</Text>
+                                )}
                             </Pressable>
                         </View>
 

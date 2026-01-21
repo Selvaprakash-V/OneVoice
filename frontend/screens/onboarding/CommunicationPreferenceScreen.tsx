@@ -53,7 +53,10 @@ export default function CommunicationPreferenceScreen({ navigation }: any) {
             styles.card,
             communicationPreference === 'text' && styles.cardActive,
           ]}
-          onPress={() => setCommunicationPreference('text')}
+          onPress={() => {
+            setCommunicationPreference('text');
+            navigation.navigate('TextSpeech');
+          }}
         >
           <View style={[styles.imageLayer, { pointerEvents: 'none' }]}>
             <Image
@@ -67,7 +70,7 @@ export default function CommunicationPreferenceScreen({ navigation }: any) {
               style={[
                 styles.cardTitle,
                 communicationPreference === 'text' &&
-                  styles.cardTitleActive,
+                styles.cardTitleActive,
               ]}
             >
               Text
@@ -84,7 +87,10 @@ export default function CommunicationPreferenceScreen({ navigation }: any) {
             styles.card,
             communicationPreference === 'sign' && styles.cardActive,
           ]}
-          onPress={() => setCommunicationPreference('sign')}
+          onPress={() => {
+            setCommunicationPreference('sign');
+            navigation.navigate('SignLanguageConverter');
+          }}
         >
           <View style={[styles.imageLayer, { pointerEvents: 'none' }]}>
             <Image
@@ -98,7 +104,7 @@ export default function CommunicationPreferenceScreen({ navigation }: any) {
               style={[
                 styles.cardTitle,
                 communicationPreference === 'sign' &&
-                  styles.cardTitleActive,
+                styles.cardTitleActive,
               ]}
             >
               Sign Language
@@ -130,7 +136,7 @@ export default function CommunicationPreferenceScreen({ navigation }: any) {
             style={[
               styles.cardTitle,
               communicationPreference === 'both' &&
-                styles.cardTitleActive,
+              styles.cardTitleActive,
             ]}
           >
             Both

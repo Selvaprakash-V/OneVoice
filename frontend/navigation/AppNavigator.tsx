@@ -14,6 +14,8 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import { OnboardingProvider } from '../context/OnboardingContext';
 import { auth } from '../services/firebase';
 import WelcomeGestureScreen from '../screens/app/WelcomeGestureScreen';
+import TextSpeechScreen from '../screens/app/TextSpeechScreen';
+import SignLanguageConverter from '../screens/app/SignLanguageConverter';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +28,8 @@ export type RootParamList = {
   UsageContext: undefined;
   LanguagePreference: undefined;
   PermissionExplanation: undefined;
+  TextSpeech: undefined;
+  SignLanguageConverter: undefined;
   WelcomeGesture: undefined;
   MainApp: undefined;
 };
@@ -36,7 +40,7 @@ export default function AppNavigator() {
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged
       ? auth.onAuthStateChanged((user: any) => setIsLoggedIn(!!user))
-      : () => {};
+      : () => { };
     return unsubscribe;
   }, []);
 
@@ -45,16 +49,18 @@ export default function AppNavigator() {
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           {isLoggedIn ? (
-              <>
-                {console.log('Navigating to VisualPreferenceScreen')}
-                <Stack.Screen name="VisualPreferenceScreen" component={VisualPreferenceScreen} />
-                <Stack.Screen name="CommunicationPreference" component={CommunicationPreferenceScreen} />
-                <Stack.Screen name="UsageContext" component={UsageContextScreen} />
-                <Stack.Screen name="LanguagePreference" component={LanguagePreferenceScreen} />
-                <Stack.Screen name="PermissionExplanation" component={PermissionExplanationScreen} />
-                <Stack.Screen name="WelcomeGesture" component={WelcomeGestureScreen} />
-                <Stack.Screen name="MainApp" component={MainAppScreen} />
-              </>
+            <>
+              {console.log('Navigating to VisualPreferenceScreen')}
+              <Stack.Screen name="VisualPreferenceScreen" component={VisualPreferenceScreen} />
+              <Stack.Screen name="CommunicationPreference" component={CommunicationPreferenceScreen} />
+              <Stack.Screen name="UsageContext" component={UsageContextScreen} />
+              <Stack.Screen name="LanguagePreference" component={LanguagePreferenceScreen} />
+              <Stack.Screen name="PermissionExplanation" component={PermissionExplanationScreen} />
+              <Stack.Screen name="TextSpeech" component={TextSpeechScreen} />
+              <Stack.Screen name="SignLanguageConverter" component={SignLanguageConverter} />
+              <Stack.Screen name="WelcomeGesture" component={WelcomeGestureScreen} />
+              <Stack.Screen name="MainApp" component={MainAppScreen} />
+            </>
           ) : (
             <>
               <Stack.Screen name="Welcome" component={WelcomeScreen} />

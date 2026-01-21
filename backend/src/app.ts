@@ -5,11 +5,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 import onboardingRouter from './routes/onboarding';
 import userRouter from './routes/user';
+import animationRouter from './routes/animation';
 import cors from 'cors';
+import path from 'path';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Serve static assets (videos)
+// Assumes assets are in backend/public/assets
+app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
 
 // Debug log to confirm middleware registration
 app.use((req, res, next) => {
@@ -24,6 +30,7 @@ mongoose.connect(mongoUri || '')
 
 app.use('/onboarding', onboardingRouter);
 app.use('/users', userRouter);
+app.use('/animation', animationRouter);
 
 app.get('/', (req, res) => {
   res.send('OneVoice API running');

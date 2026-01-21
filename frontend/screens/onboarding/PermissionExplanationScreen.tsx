@@ -45,8 +45,8 @@ export default function PermissionExplanationScreen({ navigation }: any) {
     }
 
     setPermissionsExplained(true);
-    console.log('Navigating to WelcomeGesture');
-    navigation.replace('WelcomeGesture');
+    console.log('Navigating to TextSpeech');
+    navigation.navigate('TextSpeech');
   };
 
   return (

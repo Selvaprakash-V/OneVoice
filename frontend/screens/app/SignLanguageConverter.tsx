@@ -15,16 +15,17 @@ import { Audio } from 'expo-av';
 import { colors } from '../../theme/colors';
 
 const COLORS = {
-    bg: '#0A0F2C',
-    cardBg: 'rgba(255,255,255,0.06)',
-    cardBorder: 'rgba(255,255,255,0.08)',
-    neonPurple: '#C77DFF',
-    neonBlue: '#5AD7FF',
-    softWhite: '#F1F6FF',
-    mutedText: '#A9B7D0',
-    success: '#4ECDC4',
-    error: '#FF6B6B',
-    highlight: '#09edc7',
+    bg: '#05070a', // Darker cleaner background
+    cardBg: 'rgba(30,30,40,0.4)', // More visible glassmorphism
+    cardBorder: 'rgba(255,255,255,0.1)',
+    neonPurple: '#d946ef', // Slightly more vibrant
+    neonBlue: '#38bdf8', // Sky blue
+    softWhite: '#f8fafc',
+    mutedText: '#94a3b8',
+    success: '#10b981',
+    error: '#ef4444',
+    highlight: '#22d3ee',
+    gold: '#fbbf24',
 };
 
 // Backend API URL - Update this to your Django server URL
@@ -266,24 +267,21 @@ export default function SignLanguageConverter({ navigation }: SignLanguageConver
                 <View style={styles.header}>
                     <Text style={styles.title}>Sign Language Converter</Text>
                     <Text style={styles.subtitle}>
-                        Convert speech or text to Indian Sign Language animations
+                        Transform speech and text into expressive sign language animations instantly.
                     </Text>
                 </View>
 
                 {/* Input Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Input</Text>
-                        <View style={styles.badge}>
-                            <Text style={styles.badgeText}>Speech/Text</Text>
-                        </View>
+                        <Text style={styles.sectionTitle}>Input Source</Text>
                     </View>
 
-                    <View style={styles.card}>
-                        <View style={styles.inputContainer}>
+                    <View style={styles.glassCard}>
+                        <View style={styles.inputWrapper}>
                             <TextInput
                                 style={styles.textInput}
-                                placeholder="Enter text or use microphone..."
+                                placeholder="Type your message here..."
                                 placeholderTextColor={COLORS.mutedText}
                                 value={inputText}
                                 onChangeText={setInputText}
@@ -291,19 +289,20 @@ export default function SignLanguageConverter({ navigation }: SignLanguageConver
                                 numberOfLines={3}
                             />
 
+                            {/* Floating Mic Button */}
                             <Pressable
                                 style={({ pressed }) => [
                                     styles.micButton,
                                     isRecording && styles.micButtonActive,
-                                    pressed && { opacity: 0.8 },
+                                    pressed && { transform: [{ scale: 0.95 }] },
                                 ]}
                                 onPress={isTranscribing ? undefined : (isRecording ? stopRecording : startRecording)}
                                 disabled={isTranscribing}
                             >
                                 {isTranscribing ? (
-                                    <ActivityIndicator size="small" color={COLORS.bg} />
+                                    <ActivityIndicator size="small" color="#fff" />
                                 ) : (
-                                    <Text style={styles.micIcon}>{isRecording ? '⏹️' : '🎤'}</Text>
+                                    <Text style={styles.micIcon}>{isRecording ? '⏹' : '🎙'}</Text>
                                 )}
                             </Pressable>
                         </View>
@@ -311,16 +310,16 @@ export default function SignLanguageConverter({ navigation }: SignLanguageConver
                         <Pressable
                             style={({ pressed }) => [
                                 styles.processButton,
-                                pressed && { opacity: 0.8 },
+                                pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
                                 isProcessing && styles.processingButton,
                             ]}
                             onPress={() => processTextToSign(inputText)}
                             disabled={isProcessing || !inputText.trim()}
                         >
                             {isProcessing ? (
-                                <ActivityIndicator color={COLORS.bg} size="small" />
+                                <ActivityIndicator color="#fff" size="small" />
                             ) : (
-                                <Text style={styles.buttonText}>Convert to Sign Language</Text>
+                                <Text style={styles.buttonText}>Convert to Sign Language ✨</Text>
                             )}
                         </Pressable>
                     </View>
@@ -468,184 +467,188 @@ const styles = StyleSheet.create({
     },
     header: {
         marginBottom: 32,
+        alignItems: 'center',
     },
     title: {
-        fontFamily: 'SpaceGrotesk_600SemiBold',
-        fontSize: 28,
+        fontFamily: 'SpaceGrotesk_700Bold', // Make sure this font is loaded, otherwise fallback
+        fontSize: 32,
         color: COLORS.softWhite,
-        marginBottom: 8,
+        textAlign: 'center',
+        marginBottom: 10,
+        textShadowColor: COLORS.neonBlue,
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
     },
     subtitle: {
         fontFamily: 'Inter_400Regular',
-        fontSize: 15,
+        fontSize: 16,
         color: COLORS.mutedText,
-        lineHeight: 22,
+        textAlign: 'center',
+        maxWidth: '80%',
+        lineHeight: 24,
     },
     section: {
-        marginBottom: 28,
+        marginBottom: 32,
     },
     sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
         marginBottom: 16,
+        paddingHorizontal: 4,
     },
     sectionTitle: {
         fontFamily: 'SpaceGrotesk_600SemiBold',
-        fontSize: 18,
+        fontSize: 20,
         color: COLORS.softWhite,
-        marginRight: 12,
+        letterSpacing: 0.5,
     },
-    badge: {
-        backgroundColor: COLORS.neonBlue,
-        paddingHorizontal: 10,
-        paddingVertical: 3,
-        borderRadius: 10,
-    },
-    badgeAlt: {
-        backgroundColor: COLORS.neonPurple,
-    },
-    badgeSuccess: {
-        backgroundColor: COLORS.success,
-    },
-    badgeText: {
-        fontFamily: 'Inter_500Medium',
-        fontSize: 11,
-        color: COLORS.bg,
-        fontWeight: '600',
-    },
-    card: {
+    glassCard: {
         backgroundColor: COLORS.cardBg,
-        borderRadius: 18,
-        padding: 18,
+        borderRadius: 24,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        elevation: 8,
+    },
+    card: { // Kept for backward compat if needed, but updated
+        backgroundColor: COLORS.cardBg,
+        borderRadius: 24,
+        padding: 20,
         borderWidth: 1,
         borderColor: COLORS.cardBorder,
     },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: 12,
-        marginBottom: 16,
+    inputWrapper: {
+        position: 'relative',
+        marginBottom: 20,
     },
     textInput: {
-        flex: 1,
         fontFamily: 'Inter_400Regular',
-        fontSize: 15,
+        fontSize: 16,
         color: COLORS.softWhite,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 12,
-        padding: 14,
-        minHeight: 100,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderRadius: 16,
+        padding: 16,
+        paddingRight: 60, // Space for mic button
+        minHeight: 120,
         textAlignVertical: 'top',
         borderWidth: 1,
         borderColor: COLORS.cardBorder,
     },
     micButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: COLORS.neonPurple,
+        position: 'absolute',
+        bottom: 12,
+        right: 12,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: COLORS.neonBlue,
         justifyContent: 'center',
         alignItems: 'center',
+        shadowColor: COLORS.neonBlue,
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        elevation: 4,
     },
     micButtonActive: {
         backgroundColor: COLORS.error,
+        shadowColor: COLORS.error,
     },
     micIcon: {
-        fontSize: 24,
+        fontSize: 20,
+        color: '#fff',
     },
     processButton: {
-        backgroundColor: COLORS.neonBlue,
-        paddingVertical: 14,
-        borderRadius: 12,
+        backgroundColor: COLORS.neonPurple, // Changed to purple for better contrast
+        paddingVertical: 16,
+        borderRadius: 16,
         alignItems: 'center',
+        shadowColor: COLORS.neonPurple,
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
+        elevation: 4,
     },
     processingButton: {
         backgroundColor: COLORS.mutedText,
+        shadowOpacity: 0,
     },
     buttonText: {
-        fontFamily: 'Inter_500Medium',
-        fontSize: 15,
-        color: COLORS.bg,
+        fontFamily: 'Inter_600SemiBold',
+        fontSize: 16,
+        color: '#fff',
         fontWeight: '600',
+        letterSpacing: 0.5,
     },
-    wordsContainer: {
-        flexDirection: 'row',
-    },
+
+    // Updated chip styles
     wordChip: {
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        paddingHorizontal: 16,
+        backgroundColor: 'rgba(56, 189, 248, 0.1)', // Subtle blue tint
+        paddingHorizontal: 18,
         paddingVertical: 10,
-        borderRadius: 20,
+        borderRadius: 100,
         marginRight: 10,
         borderWidth: 1,
-        borderColor: COLORS.cardBorder,
+        borderColor: 'rgba(56, 189, 248, 0.2)',
     },
     wordChipActive: {
-        backgroundColor: COLORS.highlight,
-        borderColor: COLORS.highlight,
+        backgroundColor: COLORS.neonBlue,
+        borderColor: COLORS.neonBlue,
+        transform: [{ scale: 1.05 }],
     },
     wordText: {
         fontFamily: 'Inter_500Medium',
-        fontSize: 16,
-        color: COLORS.softWhite,
+        fontSize: 15,
+        color: COLORS.neonBlue, // Colored text by default
     },
     wordTextActive: {
-        color: COLORS.bg,
-        fontWeight: '700',
+        color: '#000', // Dark text on active
+        fontWeight: 'bold',
     },
+
+    // Video Area
     videoContainer: {
         width: '100%',
-        height: 280,
-        backgroundColor: 'rgba(0,0,0,0.3)',
-        borderRadius: 12,
+        height: 300, // Slightly taller
+        backgroundColor: '#000',
+        borderRadius: 20,
         overflow: 'hidden',
-        marginBottom: 16,
-    },
-    video: {
-        width: '100%',
-        height: '100%',
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+        marginBottom: 20,
     },
     videoPlaceholder: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        backgroundColor: 'rgba(0,0,0,0.4)',
     },
     placeholderIcon: {
-        fontSize: 64,
+        fontSize: 50,
         marginBottom: 16,
+        opacity: 0.8,
     },
     placeholderText: {
-        fontFamily: 'Inter_400Regular',
-        fontSize: 14,
+        fontFamily: 'Inter_500Medium',
         color: COLORS.mutedText,
-        textAlign: 'center',
     },
-    controlsContainer: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    controlButton: {
-        flex: 1,
-        paddingVertical: 14,
-        borderRadius: 12,
-        alignItems: 'center',
-    },
-    primaryButton: {
-        backgroundColor: COLORS.neonPurple,
-    },
+
+    // Info & Status
     infoCard: {
-        backgroundColor: 'rgba(199, 125, 255, 0.1)',
-        borderRadius: 16,
-        padding: 18,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(199, 125, 255, 0.2)',
+        backgroundColor: 'rgba(34, 211, 238, 0.08)',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 20,
+        borderLeftWidth: 4,
+        borderLeftColor: COLORS.highlight,
     },
     infoTitle: {
         fontFamily: 'SpaceGrotesk_600SemiBold',
         fontSize: 15,
-        color: COLORS.neonPurple,
+        color: COLORS.neonBlue, // Use a bright color
         marginBottom: 10,
     },
     infoText: {
@@ -655,39 +658,43 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
     statusCard: {
-        backgroundColor: 'rgba(78, 205, 196, 0.1)',
-        borderRadius: 12,
-        padding: 14,
-        marginBottom: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(78, 205, 196, 0.2)',
+        padding: 10,
+        alignItems: 'center',
     },
     statusText: {
-        fontFamily: 'Inter_500Medium',
-        fontSize: 12,
-        color: COLORS.success,
-        marginBottom: 4,
+        color: COLORS.mutedText,
+        fontSize: 10,
     },
     statusSubtext: {
-        fontFamily: 'Inter_400Regular',
-        fontSize: 11,
-        color: COLORS.mutedText,
+        display: 'none', // Hide detailed status for cleaner UI
     },
+
+    // Continue Button
     continueButton: {
         alignSelf: 'center',
-        backgroundColor: COLORS.neonBlue,
-        borderRadius: 28,
+        backgroundColor: 'transparent',
+        borderRadius: 30,
         paddingVertical: 14,
-        paddingHorizontal: 56,
-        shadowColor: COLORS.neonBlue,
-        shadowOpacity: 0.45,
-        shadowRadius: 12,
-        elevation: 8,
+        paddingHorizontal: 40,
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+        marginBottom: 20,
     },
     continueText: {
         fontFamily: 'Inter_500Medium',
-        fontSize: 17,
-        color: COLORS.bg,
-        letterSpacing: 0.4,
+        color: COLORS.mutedText,
+        fontSize: 14,
     },
+
+    /* Legacy styles kept to prevent crashes if I missed replacements */
+    inputContainer: { flexDirection: 'row', gap: 10 },
+    wordsContainer: { flexDirection: 'row' },
+    video: { width: '100%', height: '100%' },
+    controlsContainer: { flexDirection: 'row', justifyContent: 'center' },
+    controlButton: { paddingVertical: 12, paddingHorizontal: 32, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 100 },
+    primaryButton: { backgroundColor: COLORS.neonBlue },
+    badge: { display: 'none' }, // Hiding badges for cleaner look
+    badgeAlt: { display: 'none' },
+    badgeSuccess: { display: 'none' },
+    badgeText: { display: 'none' },
 });

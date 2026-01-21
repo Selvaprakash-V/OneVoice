@@ -18,15 +18,16 @@ import { colors } from '../../theme/colors';
 const STT_API_URL = 'http://172.18.234.33:8000/api/speech-to-text/';
 
 const COLORS = {
-    bg: '#0A0F2C',
-    cardBg: 'rgba(255,255,255,0.06)',
-    cardBorder: 'rgba(255,255,255,0.08)',
-    neonPurple: '#C77DFF',
-    neonBlue: '#5AD7FF',
-    softWhite: '#F1F6FF',
-    mutedText: '#A9B7D0',
-    success: '#4ECDC4',
-    error: '#FF6B6B',
+    bg: '#05070a',
+    cardBg: 'rgba(30,30,40,0.4)',
+    cardBorder: 'rgba(255,255,255,0.1)',
+    neonPurple: '#d946ef',
+    neonBlue: '#38bdf8',
+    softWhite: '#f8fafc',
+    mutedText: '#94a3b8',
+    success: '#10b981',
+    error: '#ef4444',
+    highlight: '#22d3ee',
 };
 
 interface TextSpeechScreenProps {
@@ -192,7 +193,7 @@ export default function TextSpeechScreen({ navigation }: TextSpeechScreenProps) 
                 <View style={styles.header}>
                     <Text style={styles.title}>Text & Speech</Text>
                     <Text style={styles.subtitle}>
-                        Convert text to speech or speech to text seamlessly.
+                        Seamlessly convert between text and speech with AI-powered accuracy.
                     </Text>
                 </View>
 
@@ -254,22 +255,21 @@ export default function TextSpeechScreen({ navigation }: TextSpeechScreenProps) 
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>Speech to Text</Text>
-                        <View style={[styles.badge, styles.badgeAlt]}>
-                            <Text style={styles.badgeText}>STT</Text>
-                        </View>
                     </View>
 
-                    <View style={styles.card}>
+                    <View style={styles.glassCard}>
                         <View style={styles.recordingContainer}>
                             <Pressable
                                 style={({ pressed }) => [
                                     styles.recordButton,
                                     isRecording && styles.recordingActive,
-                                    pressed && { opacity: 0.8 },
+                                    pressed && { transform: [{ scale: 0.95 }] },
                                 ]}
                                 onPress={isRecording ? stopRecording : startRecording}
                             >
-                                <View style={[styles.recordDot, isRecording && styles.recordDotActive]} />
+                                <View style={[styles.recordIconWrapper, isRecording && styles.recordIconWrapperActive]}>
+                                    <Text style={{ fontSize: 24 }}>{isRecording ? '⏹' : '🎙'}</Text>
+                                </View>
                                 <Text style={styles.recordButtonText}>
                                     {isRecording ? 'Stop Recording' : 'Start Recording'}
                                 </Text>
@@ -278,25 +278,25 @@ export default function TextSpeechScreen({ navigation }: TextSpeechScreenProps) 
                             {isTranscribing ? (
                                 <View style={styles.recordingIndicator}>
                                     <ActivityIndicator size="small" color={COLORS.neonBlue} />
-                                    <Text style={[styles.recordingText, { color: COLORS.neonBlue }]}>Transcribing...</Text>
+                                    <Text style={[styles.recordingText, { color: COLORS.neonBlue }]}>Transcribing audio...</Text>
                                 </View>
                             ) : isRecording && (
                                 <View style={styles.recordingIndicator}>
                                     <View style={styles.pulseCircle} />
-                                    <Text style={styles.recordingText}>Recording...</Text>
+                                    <Text style={styles.recordingText}>Listening...</Text>
                                 </View>
                             )}
                         </View>
 
                         {transcribedText ? (
                             <View style={styles.transcriptionBox}>
-                                <Text style={styles.transcriptionLabel}>Transcription:</Text>
+                                <Text style={styles.transcriptionLabel}>TRANSCRIPTION</Text>
                                 <Text style={styles.transcriptionText}>{transcribedText}</Text>
                             </View>
                         ) : (
                             <View style={styles.placeholderBox}>
                                 <Text style={styles.placeholderText}>
-                                    🎤 Tap the button above to start recording
+                                    Tap the microphone to start speaking
                                 </Text>
                             </View>
                         )}
@@ -345,52 +345,59 @@ const styles = StyleSheet.create({
     },
     header: {
         marginBottom: 32,
+        alignItems: 'center',
     },
     title: {
-        fontFamily: 'SpaceGrotesk_600SemiBold',
+        fontFamily: 'SpaceGrotesk_700Bold',
         fontSize: 32,
         color: COLORS.softWhite,
-        marginBottom: 8,
+        textAlign: 'center',
+        marginBottom: 10,
+        textShadowColor: COLORS.neonPurple,
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 10,
     },
     subtitle: {
         fontFamily: 'Inter_400Regular',
         fontSize: 16,
         color: COLORS.mutedText,
+        textAlign: 'center',
+        maxWidth: '85%',
         lineHeight: 24,
     },
     section: {
         marginBottom: 32,
     },
     sectionHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
         marginBottom: 16,
+        paddingHorizontal: 4,
     },
     sectionTitle: {
         fontFamily: 'SpaceGrotesk_600SemiBold',
         fontSize: 20,
         color: COLORS.softWhite,
-        marginRight: 12,
+        letterSpacing: 0.5,
     },
-    badge: {
-        backgroundColor: COLORS.neonBlue,
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
+    glassCard: {
+        backgroundColor: COLORS.cardBg,
+        borderRadius: 24,
+        padding: 24,
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 4.65,
+        elevation: 8,
     },
-    badgeAlt: {
-        backgroundColor: COLORS.neonPurple,
-    },
-    badgeText: {
-        fontFamily: 'Inter_500Medium',
-        fontSize: 12,
-        color: COLORS.bg,
-        fontWeight: '600',
-    },
+    // Keep legacy card for compatibility if missed
     card: {
         backgroundColor: COLORS.cardBg,
-        borderRadius: 20,
-        padding: 20,
+        borderRadius: 24,
+        padding: 24,
         borderWidth: 1,
         borderColor: COLORS.cardBorder,
     },
@@ -398,12 +405,12 @@ const styles = StyleSheet.create({
         fontFamily: 'Inter_400Regular',
         fontSize: 16,
         color: COLORS.softWhite,
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 12,
-        padding: 16,
-        minHeight: 120,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderRadius: 16,
+        padding: 18,
+        minHeight: 140,
         textAlignVertical: 'top',
-        marginBottom: 16,
+        marginBottom: 20,
         borderWidth: 1,
         borderColor: COLORS.cardBorder,
     },
@@ -414,12 +421,16 @@ const styles = StyleSheet.create({
     actionButton: {
         flex: 1,
         paddingVertical: 14,
-        borderRadius: 12,
+        borderRadius: 14,
         alignItems: 'center',
         justifyContent: 'center',
     },
     primaryButton: {
         backgroundColor: COLORS.neonBlue,
+        shadowColor: COLORS.neonBlue,
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
     },
     speakingButton: {
         backgroundColor: COLORS.error,
@@ -427,56 +438,67 @@ const styles = StyleSheet.create({
     secondaryButton: {
         backgroundColor: 'transparent',
         borderWidth: 1,
-        borderColor: COLORS.neonBlue,
+        borderColor: COLORS.cardBorder,
     },
     buttonText: {
-        fontFamily: 'Inter_500Medium',
-        fontSize: 16,
-        color: COLORS.bg,
+        fontFamily: 'Inter_600SemiBold',
+        fontSize: 15,
+        color: '#fff', // White text
         fontWeight: '600',
     },
     secondaryButtonText: {
         fontFamily: 'Inter_500Medium',
-        fontSize: 16,
-        color: COLORS.neonBlue,
-        fontWeight: '600',
+        fontSize: 15,
+        color: COLORS.mutedText,
     },
+
+    // STT Specifics
     recordingContainer: {
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: 24,
     },
     recordButton: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: COLORS.neonPurple,
-        paddingVertical: 16,
-        paddingHorizontal: 32,
-        borderRadius: 30,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 100,
         gap: 12,
+        shadowColor: COLORS.neonPurple,
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
+        elevation: 6,
     },
     recordingActive: {
         backgroundColor: COLORS.error,
+        shadowColor: COLORS.error,
     },
-    recordDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: COLORS.bg,
+    recordIconWrapper: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    recordDotActive: {
-        backgroundColor: COLORS.softWhite,
+    recordIconWrapperActive: {
+        backgroundColor: 'rgba(0,0,0,0.1)',
     },
     recordButtonText: {
-        fontFamily: 'Inter_500Medium',
+        fontFamily: 'Inter_600SemiBold',
         fontSize: 16,
-        color: COLORS.bg,
-        fontWeight: '600',
+        color: '#fff',
     },
     recordingIndicator: {
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 16,
         gap: 8,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
     },
     pulseCircle: {
         width: 8,
@@ -485,33 +507,35 @@ const styles = StyleSheet.create({
         backgroundColor: COLORS.error,
     },
     recordingText: {
-        fontFamily: 'Inter_400Regular',
-        fontSize: 14,
-        color: COLORS.error,
+        fontFamily: 'Inter_500Medium',
+        fontSize: 13,
+        color: COLORS.mutedText,
     },
     transcriptionBox: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 12,
-        padding: 16,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        borderRadius: 16,
+        padding: 20,
         borderWidth: 1,
-        borderColor: COLORS.success,
+        borderColor: 'rgba(255,255,255,0.05)',
     },
     transcriptionLabel: {
-        fontFamily: 'Inter_500Medium',
-        fontSize: 14,
-        color: COLORS.success,
-        marginBottom: 8,
+        fontFamily: 'SpaceGrotesk_700Bold',
+        fontSize: 11,
+        color: COLORS.neonBlue,
+        marginBottom: 12,
+        letterSpacing: 1,
+        opacity: 0.8,
     },
     transcriptionText: {
         fontFamily: 'Inter_400Regular',
-        fontSize: 16,
+        fontSize: 18,
         color: COLORS.softWhite,
-        lineHeight: 24,
+        lineHeight: 28,
     },
     placeholderBox: {
-        backgroundColor: 'rgba(255,255,255,0.03)',
-        borderRadius: 12,
-        padding: 24,
+        backgroundColor: 'rgba(255,255,255,0.02)',
+        borderRadius: 16,
+        padding: 32,
         alignItems: 'center',
         borderWidth: 1,
         borderColor: COLORS.cardBorder,
@@ -522,20 +546,21 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: COLORS.mutedText,
         textAlign: 'center',
+        maxWidth: 200,
     },
     infoCard: {
-        backgroundColor: 'rgba(93, 215, 255, 0.1)',
-        borderRadius: 16,
+        backgroundColor: 'rgba(217, 70, 239, 0.08)',
+        borderRadius: 20,
         padding: 20,
         marginBottom: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(93, 215, 255, 0.2)',
+        borderLeftWidth: 4,
+        borderLeftColor: COLORS.neonPurple,
     },
     infoTitle: {
         fontFamily: 'SpaceGrotesk_600SemiBold',
         fontSize: 16,
-        color: COLORS.neonBlue,
-        marginBottom: 12,
+        color: COLORS.neonPurple,
+        marginBottom: 8,
     },
     infoText: {
         fontFamily: 'Inter_400Regular',
@@ -545,19 +570,24 @@ const styles = StyleSheet.create({
     },
     continueButton: {
         alignSelf: 'center',
-        backgroundColor: COLORS.neonBlue,
-        borderRadius: 28,
+        backgroundColor: 'transparent',
+        borderRadius: 30,
         paddingVertical: 14,
-        paddingHorizontal: 56,
-        shadowColor: COLORS.neonBlue,
-        shadowOpacity: 0.45,
-        shadowRadius: 12,
-        elevation: 8,
+        paddingHorizontal: 40,
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+        marginBottom: 20,
     },
     continueText: {
         fontFamily: 'Inter_500Medium',
-        fontSize: 17,
-        color: COLORS.bg,
-        letterSpacing: 0.4,
+        color: COLORS.mutedText,
+        fontSize: 14,
     },
+
+    // Legacy support
+    badge: { display: 'none' },
+    badgeAlt: { display: 'none' },
+    badgeText: { display: 'none' },
+    recordDot: { display: 'none' },
+    recordDotActive: { display: 'none' },
 });

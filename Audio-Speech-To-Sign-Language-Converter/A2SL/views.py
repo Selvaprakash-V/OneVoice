@@ -177,7 +177,7 @@ def speech_to_text_api(request):
             config = speech.RecognitionConfig(
                 encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
                 language_code="en-US",
-                enable_automatic_punctuation=True,
+                enable_automatic_punctuation=False,
             )
 
             try:
@@ -208,9 +208,14 @@ def speech_to_text_api(request):
     return JsonResponse({'error': 'POST method required'}, status=405)
 
 
+import re
+import string
+
 def process_speech_to_sign(text):
 	#tokenizing the sentence
 	text = text.lower()
+	#remove punctuation
+	text = re.sub(r'[^\w\s]', '', text)
 	#tokenizing the sentence
 	words = word_tokenize(text)
 

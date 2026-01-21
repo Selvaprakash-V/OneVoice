@@ -58,6 +58,47 @@ def animation_api(request):
 	return JsonResponse({'error': 'POST method required'}, status=405)
 
 
+import base64
+import cv2
+import numpy as np
+from .SignRecog import recognizer
+
+@csrf_exempt
+def predict_sign_view(request):
+    """
+    Receives a Base64 image, runs it through the Sign Language Model,
+    and returns the predicted letter.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            image_b64 = data.get('image')
+            
+            if not image_b64:
+                return JsonResponse({'error': 'No image provided'}, status=400)
+
+            # Decode Base64 to Image
+            image_bytes = base64.b64decode(image_b64)
+            np_arr = np.frombuffer(image_bytes, np.uint8)
+            frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+            if frame is None:
+                return JsonResponse({'error': 'Invalid image format'}, status=400)
+
+            # PREDICT
+            prediction = recognizer.predict(frame)
+            
+            return JsonResponse({
+                'prediction': prediction,
+                'status': 'success'
+            })
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'POST method required'}, status=405)
+
+
 @csrf_exempt
 def speech_to_text_api(request):
     def safe_remove(path):

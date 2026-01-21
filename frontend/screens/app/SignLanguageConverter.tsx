@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { Audio } from 'expo-av';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { colors } from '../../theme/colors';
 
 const COLORS = {
@@ -32,6 +33,7 @@ const COLORS = {
 // For web: use localhost, for mobile: use your computer's IP address
 const API_URL = 'http://172.18.234.33:8000/api/animation/';
 const STT_API_URL = 'http://172.18.234.33:8000/api/speech-to-text/';
+const PREDICT_API_URL = 'http://172.18.234.33:8000/api/predict-sign/';
 const STATIC_URL = 'http://172.18.234.33:8000/static/';
 
 interface SignLanguageConverterProps {
@@ -50,13 +52,83 @@ export default function SignLanguageConverter({ navigation }: SignLanguageConver
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     const videoRef = useRef<Video>(null);
 
+    const [mode, setMode] = useState<'text-to-sign' | 'sign-to-text'>('text-to-sign');
+    const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+    const [cameraRef, setCameraRef] = useState<CameraView | null>(null);
+    const [predictedLetter, setPredictedLetter] = useState('');
+    const [isPredicting, setIsPredicting] = useState(false);
+
+    // Prediction Loop Ref to stop it
+    const predictionInterval = useRef<NodeJS.Timeout | null>(null);
+
     useEffect(() => {
         return () => {
             if (recording) {
                 recording.stopAndUnloadAsync();
             }
+            if (predictionInterval.current) {
+                clearInterval(predictionInterval.current);
+            }
         };
     }, [recording]);
+
+    const toggleMode = async () => {
+        if (mode === 'text-to-sign') {
+            if (!cameraPermission?.granted) {
+                const permission = await requestCameraPermission();
+                if (!permission.granted) {
+                    Alert.alert('Permission Required', 'Camera access is needed for real-time translation.');
+                    return;
+                }
+            }
+            setMode('sign-to-text');
+            startPredictionLoop();
+        } else {
+            setMode('text-to-sign');
+            stopPredictionLoop();
+        }
+    };
+
+    const startPredictionLoop = () => {
+        setIsPredicting(true);
+        predictionInterval.current = setInterval(async () => {
+            if (cameraRef) {
+                try {
+                    const photo = await cameraRef.takePictureAsync({ base64: true, quality: 0.5 });
+                    if (photo.base64) {
+                        sendFrameToBackend(photo.base64);
+                    }
+                } catch (e) {
+                    console.log("Camera capture error:", e);
+                }
+            }
+        }, 800); // Every 800ms
+    };
+
+    const stopPredictionLoop = () => {
+        setIsPredicting(false);
+        setPredictedLetter('');
+        if (predictionInterval.current) {
+            clearInterval(predictionInterval.current);
+            predictionInterval.current = null;
+        }
+    };
+
+    const sendFrameToBackend = async (base64Image: string) => {
+        try {
+            const response = await fetch(PREDICT_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: base64Image }),
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                setPredictedLetter(data.prediction);
+            }
+        } catch (error) {
+            console.log("Prediction API Error:", error);
+        }
+    };
 
     const processTextToSign = async (text: string) => {
         if (!text.trim()) {
@@ -271,181 +343,232 @@ export default function SignLanguageConverter({ navigation }: SignLanguageConver
                     </Text>
                 </View>
 
-                {/* Input Section */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Input Source</Text>
-                    </View>
-
-                    <View style={styles.glassCard}>
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder="Type your message here..."
-                                placeholderTextColor={COLORS.mutedText}
-                                value={inputText}
-                                onChangeText={setInputText}
-                                multiline
-                                numberOfLines={3}
-                            />
-
-                            {/* Floating Mic Button */}
-                            <Pressable
-                                style={({ pressed }) => [
-                                    styles.micButton,
-                                    isRecording && styles.micButtonActive,
-                                    pressed && { transform: [{ scale: 0.95 }] },
-                                ]}
-                                onPress={isTranscribing ? undefined : (isRecording ? stopRecording : startRecording)}
-                                disabled={isTranscribing}
-                            >
-                                {isTranscribing ? (
-                                    <ActivityIndicator size="small" color="#fff" />
-                                ) : (
-                                    <Text style={styles.micIcon}>{isRecording ? '⏹' : '🎙'}</Text>
-                                )}
-                            </Pressable>
-                        </View>
-
-                        <Pressable
-                            style={({ pressed }) => [
-                                styles.processButton,
-                                pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
-                                isProcessing && styles.processingButton,
-                            ]}
-                            onPress={() => processTextToSign(inputText)}
-                            disabled={isProcessing || !inputText.trim()}
-                        >
-                            {isProcessing ? (
-                                <ActivityIndicator color="#fff" size="small" />
-                            ) : (
-                                <Text style={styles.buttonText}>Convert to Sign Language ✨</Text>
-                            )}
-                        </Pressable>
-                    </View>
+                {/* Toggle Mode Switch */}
+                <View style={styles.toggleContainer}>
+                    <Pressable
+                        style={[styles.toggleButton, mode === 'text-to-sign' && styles.toggleActive]}
+                        onPress={() => mode !== 'text-to-sign' && toggleMode()}
+                    >
+                        <Text style={[styles.toggleText, mode === 'text-to-sign' && styles.toggleTextActive]}>Sign Aid</Text>
+                    </Pressable>
+                    <Pressable
+                        style={[styles.toggleButton, mode === 'sign-to-text' && styles.toggleActive]}
+                        onPress={() => mode !== 'sign-to-text' && toggleMode()}
+                    >
+                        <Text style={[styles.toggleText, mode === 'sign-to-text' && styles.toggleTextActive]}>Real-Time</Text>
+                    </Pressable>
                 </View>
 
-                {/* Processed Words Section */}
-                {processedWords.length > 0 && (
-                    <View style={styles.section}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>Key Words</Text>
-                            <View style={[styles.badge, styles.badgeAlt]}>
-                                <Text style={styles.badgeText}>{processedWords.length}</Text>
+                {mode === 'text-to-sign' ? (
+                    <>
+                        {/* Input Section */}
+                        <View style={styles.section}>
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>Input Source</Text>
+                            </View>
+
+                            <View style={styles.glassCard}>
+                                <View style={styles.inputWrapper}>
+                                    <TextInput
+                                        style={styles.textInput}
+                                        placeholder="Type your message here..."
+                                        placeholderTextColor={COLORS.mutedText}
+                                        value={inputText}
+                                        onChangeText={setInputText}
+                                        multiline
+                                        numberOfLines={3}
+                                    />
+
+                                    {/* Floating Mic Button */}
+                                    <Pressable
+                                        style={({ pressed }) => [
+                                            styles.micButton,
+                                            isRecording && styles.micButtonActive,
+                                            pressed && { transform: [{ scale: 0.95 }] },
+                                        ]}
+                                        onPress={isTranscribing ? undefined : (isRecording ? stopRecording : startRecording)}
+                                        disabled={isTranscribing}
+                                    >
+                                        {isTranscribing ? (
+                                            <ActivityIndicator size="small" color="#fff" />
+                                        ) : (
+                                            <Text style={styles.micIcon}>{isRecording ? '⏹' : '🎙'}</Text>
+                                        )}
+                                    </Pressable>
+                                </View>
+
+                                <Pressable
+                                    style={({ pressed }) => [
+                                        styles.processButton,
+                                        pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] },
+                                        isProcessing && styles.processingButton,
+                                    ]}
+                                    onPress={() => processTextToSign(inputText)}
+                                    disabled={isProcessing || !inputText.trim()}
+                                >
+                                    {isProcessing ? (
+                                        <ActivityIndicator color="#fff" size="small" />
+                                    ) : (
+                                        <Text style={styles.buttonText}>Convert to Sign Language ✨</Text>
+                                    )}
+                                </Pressable>
                             </View>
                         </View>
 
-                        <View style={styles.card}>
-                            <ScrollView
-                                horizontal
-                                showsHorizontalScrollIndicator={false}
-                                style={styles.wordsContainer}
-                            >
-                                {processedWords.map((word, index) => (
-                                    <View
-                                        key={index}
-                                        style={[
-                                            styles.wordChip,
-                                            currentWordIndex === index && styles.wordChipActive,
-                                        ]}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.wordText,
-                                                currentWordIndex === index && styles.wordTextActive,
-                                            ]}
-                                        >
-                                            {word}
-                                        </Text>
+                        {/* Processed Words Section */}
+                        {processedWords.length > 0 && (
+                            <View style={styles.section}>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={styles.sectionTitle}>Key Words</Text>
+                                    <View style={[styles.badge, styles.badgeAlt]}>
+                                        <Text style={styles.badgeText}>{processedWords.length}</Text>
                                     </View>
-                                ))}
-                            </ScrollView>
-                        </View>
-                    </View>
-                )}
-
-                {/* Animation Section */}
-                <View style={styles.section}>
-                    <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Sign Language Animation</Text>
-                        <View style={[styles.badge, styles.badgeSuccess]}>
-                            <Text style={styles.badgeText}>ISL</Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.card}>
-                        <View style={styles.videoContainer}>
-                            {getCurrentVideoSource() ? (
-                                <Video
-                                    ref={videoRef}
-                                    source={getCurrentVideoSource()!}
-                                    style={styles.video}
-                                    useNativeControls={false}
-                                    resizeMode={ResizeMode.CONTAIN}
-                                    isLooping={false}
-                                    shouldPlay={isPlaying}
-                                    onPlaybackStatusUpdate={onVideoPlaybackStatusUpdate}
-                                />
-                            ) : (
-                                <View style={styles.videoPlaceholder}>
-                                    <Text style={styles.placeholderIcon}>🤟</Text>
-                                    <Text style={styles.placeholderText}>
-                                        Sign language animation will appear here
-                                    </Text>
                                 </View>
-                            )}
+
+                                <View style={styles.card}>
+                                    <ScrollView
+                                        horizontal
+                                        showsHorizontalScrollIndicator={false}
+                                        style={styles.wordsContainer}
+                                    >
+                                        {processedWords.map((word, index) => (
+                                            <View
+                                                key={index}
+                                                style={[
+                                                    styles.wordChip,
+                                                    currentWordIndex === index && styles.wordChipActive,
+                                                ]}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        styles.wordText,
+                                                        currentWordIndex === index && styles.wordTextActive,
+                                                    ]}
+                                                >
+                                                    {word}
+                                                </Text>
+                                            </View>
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            </View>
+                        )}
+
+                        {/* Animation Section */}
+                        <View style={styles.section}>
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>Sign Language Animation</Text>
+                                <View style={[styles.badge, styles.badgeSuccess]}>
+                                    <Text style={styles.badgeText}>ISL</Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.card}>
+                                <View style={styles.videoContainer}>
+                                    {getCurrentVideoSource() ? (
+                                        <Video
+                                            ref={videoRef}
+                                            source={getCurrentVideoSource()!}
+                                            style={styles.video}
+                                            useNativeControls={false}
+                                            resizeMode={ResizeMode.CONTAIN}
+                                            isLooping={false}
+                                            shouldPlay={isPlaying}
+                                            onPlaybackStatusUpdate={onVideoPlaybackStatusUpdate}
+                                        />
+                                    ) : (
+                                        <View style={styles.videoPlaceholder}>
+                                            <Text style={styles.placeholderIcon}>🤟</Text>
+                                            <Text style={styles.placeholderText}>
+                                                Sign language animation will appear here
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+
+                                <View style={styles.controlsContainer}>
+                                    <Pressable
+                                        style={({ pressed }) => [
+                                            styles.controlButton,
+                                            styles.primaryButton,
+                                            pressed && { opacity: 0.8 },
+                                        ]}
+                                        onPress={isPlaying ? pauseAnimation : playSignLanguageAnimation}
+                                        disabled={processedWords.length === 0}
+                                    >
+                                        <Text style={styles.buttonText}>
+                                            {isPlaying ? '⏸️ Pause' : '▶️ Play'}
+                                        </Text>
+                                    </Pressable>
+                                </View>
+                            </View>
                         </View>
 
-                        <View style={styles.controlsContainer}>
+                        {/* Info Section */}
+                        <View style={styles.infoCard}>
+                            <Text style={styles.infoTitle}>ℹ️ How it works</Text>
+                            <Text style={styles.infoText}>
+                                1. Enter text or use the microphone to record speech{'\n'}
+                                2. Click "Convert to Sign Language" to process{'\n'}
+                                3. View the key words extracted from your input{'\n'}
+                                4. Watch the sign language animation play automatically
+                            </Text>
+                        </View>
+
+                        {/* Backend Status */}
+                        <View style={styles.statusCard}>
+                            <Text style={styles.statusText}>
+                                🔗 Backend: {API_URL}
+                            </Text>
+                            <Text style={styles.statusSubtext}>
+                                Ensure Django server is running for full functionality
+                            </Text>
+                        </View>
+
+                        {/* Navigation Button */}
+                        {navigation && (
                             <Pressable
                                 style={({ pressed }) => [
-                                    styles.controlButton,
-                                    styles.primaryButton,
-                                    pressed && { opacity: 0.8 },
+                                    styles.continueButton,
+                                    pressed && { opacity: 0.88 },
                                 ]}
-                                onPress={isPlaying ? pauseAnimation : playSignLanguageAnimation}
-                                disabled={processedWords.length === 0}
+                                onPress={() => navigation.navigate('WelcomeGesture')}
                             >
-                                <Text style={styles.buttonText}>
-                                    {isPlaying ? '⏸️ Pause' : '▶️ Play'}
-                                </Text>
+                                <Text style={styles.continueText}>Continue</Text>
                             </Pressable>
+                        )}
+                    </>
+                ) : (
+                    /* Real-Time Camera Mode */
+                    <View style={styles.cameraSection}>
+                        <View style={styles.glassCard}>
+                            <View style={styles.cameraWrapper}>
+                                {cameraPermission?.granted ? (
+                                    <CameraView
+                                        style={styles.camera}
+                                        facing='front'
+                                        ref={(ref) => setCameraRef(ref)}
+                                    >
+                                        <View style={styles.overlay}>
+                                            <View style={styles.predictionBox}>
+                                                <Text style={styles.predictionLabel}>DETECTED SIGN</Text>
+                                                <Text style={styles.predictionText}>
+                                                    {predictedLetter || "..."}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </CameraView>
+                                ) : (
+                                    <View style={styles.cameraPlaceholder}>
+                                        <Text style={styles.placeholderText}>Camera Permission Needed</Text>
+                                    </View>
+                                )}
+                            </View>
+                            <Text style={styles.instructionText}>
+                                Point the camera at your hand. Perform ISL gestures clearly.
+                            </Text>
                         </View>
                     </View>
-                </View>
-
-                {/* Info Section */}
-                <View style={styles.infoCard}>
-                    <Text style={styles.infoTitle}>ℹ️ How it works</Text>
-                    <Text style={styles.infoText}>
-                        1. Enter text or use the microphone to record speech{'\n'}
-                        2. Click "Convert to Sign Language" to process{'\n'}
-                        3. View the key words extracted from your input{'\n'}
-                        4. Watch the sign language animation play automatically
-                    </Text>
-                </View>
-
-                {/* Backend Status */}
-                <View style={styles.statusCard}>
-                    <Text style={styles.statusText}>
-                        🔗 Backend: {API_URL}
-                    </Text>
-                    <Text style={styles.statusSubtext}>
-                        Ensure Django server is running for full functionality
-                    </Text>
-                </View>
-
-                {/* Navigation Button */}
-                {navigation && (
-                    <Pressable
-                        style={({ pressed }) => [
-                            styles.continueButton,
-                            pressed && { opacity: 0.88 },
-                        ]}
-                        onPress={() => navigation.navigate('WelcomeGesture')}
-                    >
-                        <Text style={styles.continueText}>Continue</Text>
-                    </Pressable>
                 )}
             </ScrollView>
         </ImageBackground>
@@ -499,6 +622,87 @@ const styles = StyleSheet.create({
         fontSize: 20,
         color: COLORS.softWhite,
         letterSpacing: 0.5,
+    },
+    toggleContainer: {
+        flexDirection: 'row',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        padding: 4,
+        borderRadius: 16,
+        marginBottom: 24,
+        alignSelf: 'center',
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+    },
+    toggleButton: {
+        paddingVertical: 10,
+        paddingHorizontal: 24,
+        borderRadius: 12,
+    },
+    toggleActive: {
+        backgroundColor: COLORS.neonBlue,
+    },
+    toggleText: {
+        fontFamily: 'Inter_500Medium',
+        fontSize: 14,
+        color: COLORS.mutedText,
+    },
+    toggleTextActive: {
+        color: '#000',
+        fontWeight: '700',
+    },
+    cameraSection: {
+        marginBottom: 30,
+    },
+    cameraWrapper: {
+        width: '100%',
+        height: 400,
+        borderRadius: 20,
+        overflow: 'hidden',
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: COLORS.cardBorder,
+        position: 'relative',
+    },
+    camera: {
+        flex: 1,
+    },
+    overlay: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        padding: 20,
+        backgroundColor: 'rgba(0,0,0,0.1)',
+    },
+    predictionBox: {
+        backgroundColor: 'rgba(0,0,0,0.7)', // Dark semi-transparent
+        padding: 20,
+        borderRadius: 16,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: COLORS.neonBlue,
+    },
+    predictionLabel: {
+        fontFamily: 'SpaceGrotesk_700Bold',
+        fontSize: 12,
+        color: COLORS.neonBlue,
+        letterSpacing: 1.5,
+        marginBottom: 4,
+    },
+    predictionText: {
+        fontFamily: 'SpaceGrotesk_700Bold',
+        fontSize: 48,
+        color: '#fff',
+    },
+    cameraPlaceholder: {
+        flex: 1,
+        backgroundColor: '#000',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    instructionText: {
+        textAlign: 'center',
+        color: COLORS.mutedText,
+        fontSize: 14,
+        fontStyle: 'italic',
     },
     glassCard: {
         backgroundColor: COLORS.cardBg,

@@ -27,6 +27,7 @@ urlpatterns = [
     path('animation/',views.animation_view,name='animation'),
     path('api/animation/', views.animation_api, name='animation_api'),
     path('api/speech-to-text/', views.speech_to_text_api, name='speech_to_text_api'),
+    path('api/predict-sign/', views.predict_sign_view, name='predict_sign_api'),
     path('',views.home_view,name='home'),
     path('animation/',views.animation_view,name='animation')
 ]

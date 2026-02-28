@@ -58,22 +58,26 @@ def animation_api(request):
 	return JsonResponse({'error': 'POST method required'}, status=405)
 
 
-import base64
-import cv2
-import numpy as np
-from .SignRecog import recognizer
-
 @csrf_exempt
 def predict_sign_view(request):
     """
     Receives a Base64 image, runs it through the Sign Language Model,
     and returns the predicted letter.
     """
+    try:
+        import base64
+        import cv2
+        import numpy as np
+        from .SignRecog import recognizer
+
+    except ImportError as e:
+        return JsonResponse({'error': f'Failed to import required modules: {str(e)}'}, status=500)
+
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             image_b64 = data.get('image')
-            
+
             if not image_b64:
                 return JsonResponse({'error': 'No image provided'}, status=400)
 

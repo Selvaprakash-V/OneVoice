@@ -17,7 +17,7 @@ import { Audio } from 'expo-av';
 import { colors } from '../../theme/colors';
 import { useOnboarding } from '../../context/OnboardingContext';
 
-const API_KEY = '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';
+const API_KEY = process.env.GROQ_API_KEY;
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 // Using the verified local IP
 const STT_API_URL = 'http://10.38.112.241:8000/api/speech-to-text/';

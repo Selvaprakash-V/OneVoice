@@ -16,8 +16,9 @@ import {
 import { Audio } from 'expo-av';
 import { colors } from '../../theme/colors';
 import { useOnboarding } from '../../context/OnboardingContext';
+import { GROQ_API_KEY } from '@env';
 
-const API_KEY = process.env.GROQ_API_KEY;
+const API_KEY = GROQ_API_KEY;
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 // Using the verified local IP
 const STT_API_URL = 'http://10.38.112.241:8000/api/speech-to-text/';
@@ -89,6 +90,12 @@ export default function LLMChatScreen({ navigation }: any) {
     const handleSend = async () => {
         if (!inputText.trim()) return;
 
+        // Validate API key
+        if (!API_KEY) {
+            Alert.alert('Error', 'AI assistant is not configured. Please check your API key.');
+            return;
+        }
+
         const userMsg: Message = {
             id: Date.now().toString(),
             text: inputText,
@@ -122,6 +129,10 @@ export default function LLMChatScreen({ navigation }: any) {
                     ]
                 })
             });
+
+            if (!response.ok) {
+                throw new Error(`API request failed: ${response.status}`);
+            }
 
             const data = await response.json();
 

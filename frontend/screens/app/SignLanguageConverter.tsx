@@ -30,9 +30,9 @@ const COLORS = {
 
 // Backend API URL - Update this to your Django server URL
 // For web: use localhost, for mobile: use your computer's IP address
-const API_URL = 'http://10.38.112.241:8000/api/animation/';
-const STT_API_URL = 'http://10.38.112.241:8000/api/speech-to-text/';
-const STATIC_URL = 'http://10.38.112.241:8000/static/';
+const API_URL = 'http://172.17.29.50:8000/api/animation/';
+const STT_API_URL = 'http://172.17.29.50:8000/api/speech-to-text/';
+const STATIC_URL = 'http://172.17.29.50:8000/static/';
 
 interface SignLanguageConverterProps {
     navigation?: any;

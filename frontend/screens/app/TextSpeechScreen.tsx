@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import * as Speech from 'expo-speech';
 import { Audio } from 'expo-av';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 
 // Backend API URL - Update this to your Django server URL
@@ -619,4 +620,61 @@ const styles = StyleSheet.create({
     badgeText: { display: 'none' },
     recordDot: { display: 'none' },
     recordDotActive: { display: 'none' },
+
+    // LLM Chat Card Styles
+    featureCard: {
+        marginBottom: 32,
+        borderRadius: 24,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: COLORS.neonBlue,
+        backgroundColor: 'rgba(56, 189, 248, 0.05)',
+        shadowColor: COLORS.neonBlue,
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 4,
+    },
+    cardGradient: {
+        padding: 2.5, // Gradient border effect if we used one, but here just padding
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 20,
+        gap: 16,
+    },
+    iconContainer: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cardHeaderText: {
+        flex: 1,
+    },
+    cardTitle: {
+        fontFamily: 'SpaceGrotesk_600SemiBold',
+        fontSize: 18,
+        color: COLORS.softWhite,
+        marginBottom: 4,
+    },
+    cardSubtitle: {
+        fontFamily: 'Inter_400Regular',
+        fontSize: 13,
+        color: COLORS.mutedText,
+    },
+    arrowContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    arrowText: {
+        color: COLORS.neonBlue,
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
 });

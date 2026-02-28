@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { colors } from '../../theme/colors';
+import { useOnboarding } from '../../context/OnboardingContext';
 
 const API_KEY = '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';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -58,6 +59,24 @@ export default function LLMChatScreen({ navigation }: any) {
     const [recording, setRecording] = useState<Audio.Recording | null>(null);
     const [permissionResponse, requestPermission] = Audio.usePermissions();
     const flatListRef = useRef<FlatList>(null);
+    const { usageContexts } = useOnboarding();
+
+    const getSystemPrompt = () => {
+        const base = "You are assisting a deaf or hard-of-hearing person. Be direct, clear, and concise. Avoid unnecessary explanations or filler words. Get straight to the point while remaining supportive. Keep responses brief unless specifically asked for details.";
+        const context = usageContexts && usageContexts.length > 0 ? usageContexts[0] : 'daily';
+
+        switch (context) {
+            case 'classroom':
+                return `${base} Context: Classroom. Focus on key lecture points, academic concepts, and important instructions. Be brief and actionable.`;
+            case 'workplace':
+                return `${base} Context: Workplace. Assist with professional communication, meeting summaries, and task clarification. Stay professional and concise.`;
+            case 'public':
+                return `${base} Context: Public setting. Help with quick social interactions, announcements, or service communication. Be extremely concise and practical.`;
+            case 'daily':
+            default:
+                return `${base} Context: Daily life. Provide helpful, casual assistance. Keep it simple and to the point.`;
+        }
+    };
 
     useEffect(() => {
         return () => {
@@ -89,11 +108,11 @@ export default function LLMChatScreen({ navigation }: any) {
                     'Authorization': `Bearer ${API_KEY}`
                 },
                 body: JSON.stringify({
-                    model: 'llama3-8b-8192', // Using a fast, reliable model on Groq
+                    model: 'llama-3.1-8b-instant', // Using a fast, reliable model on Groq
                     messages: [
                         {
                             role: 'system',
-                            content: "You are a helpful, empathetic, and patient assistant communicating with a deaf or hard-of-hearing person. Your responses should be clear, supportive, and concise. Prioritize understanding their needs and showing empathy."
+                            content: getSystemPrompt()
                         },
                         ...messages.map(m => ({
                             role: m.sender === 'user' ? 'user' : 'assistant',
